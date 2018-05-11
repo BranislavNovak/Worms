@@ -4,9 +4,6 @@ d:\worms_project\worms\bc_mem_packer\battle_mem\tools.cpp(21): warning C4018: '<
 d:\worms_project\worms\bc_mem_packer\battle_mem\tools.cpp(43): warning C4018: '<': signed/unsigned mismatch
 d:\worms_project\worms\bc_mem_packer\battle_mem\tools.cpp(35): warning C4101: 'mask': unreferenced local variable
 d:\worms_project\worms\bc_mem_packer\battle_mem\tools.cpp(36): warning C4101: 'bit': unreferenced local variable
-d:\worms_project\worms\bc_mem_packer\battle_mem\tools.cpp(194): warning C4101: 'y': unreferenced local variable
-  main.cpp
-  bitmap.cpp
-  Generating Code...
+d:\worms_project\worms\bc_mem_packer\battle_mem\tools.cpp(176): warning C4101: 'y': unreferenced local variable
   battle_mem.vcxproj -> D:\WORMS_project\Worms\bc_mem_packer\battle_mem\Debug\battle_mem.exe
   battle_mem.vcxproj -> D:\WORMS_project\Worms\bc_mem_packer\battle_mem\Debug\battle_mem.pdb (Full PDB)

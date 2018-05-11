@@ -12,8 +12,8 @@
  */
 
 // ***** 16x16 IMAGES *****
-#define IMG_16x16_cigle			0x00FF //2
-#define IMG_16x16_coin			0x013F //5
+#define IMG_16x16_cigle			0x00FF //2				// treba izmenjati lepo i uklopiti sta je sta
+#define IMG_16x16_coin			0x013F //5				// bilo bi kul da izmenimo sva imena, pa umesto cigle, da je lepo blato, crv i sve
 #define IMG_16x16_crno			0x017F //0
 #define IMG_16x16_enemi1		0x01BF //4
 #define IMG_16x16_mario			0x01FF //1
