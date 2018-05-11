@@ -13,36 +13,37 @@
     Free allocated memory!
 */
 
-unsigned char * load_bitmap( const char * file )
-{
+unsigned char * load_bitmap(
+	const char * file,
+	bitmap_file_header_t*    bmp_file_hdr,
+	bitmap_info_header_t*    bmp_info_hdr
+){
     FILE *                  f;
-    bitmap_file_header_t    bmp_file_hdr;
-    bitmap_info_header_t    bmp_info_hdr;
     unsigned char *         img;
 
     if( !( f = fopen( file, "rb" ) ) ) {
         return NULL;
     }
 
-    fread( &bmp_file_hdr, sizeof( bitmap_file_header_t ), 1, f );
+    fread( bmp_file_hdr, sizeof( bitmap_file_header_t ), 1, f );
 	
-	if( bmp_file_hdr.f_type != 0x4D42 ) {
+	if( bmp_file_hdr->f_type != 0x4D42 ) {
 		printf("Error 0x4D42\n");
 		fclose( f );
         return NULL;
     }
 	
 
-    fread( &bmp_info_hdr, sizeof( bitmap_info_header_t ), 1, f );
-    fseek( f, bmp_file_hdr.offset, SEEK_SET );
+    fread( bmp_info_hdr, sizeof( bitmap_info_header_t ), 1, f );
+    fseek( f, bmp_file_hdr->offset, SEEK_SET );
 
-	if (!(img = (unsigned char *)malloc(bmp_info_hdr.bitmap_size))) {
+	if (!(img = (unsigned char *)malloc(bmp_info_hdr->bitmap_size))) {
 		printf("Error malloc\n");
         fclose( f );
         return NULL;
     }
 
-    fread( img, 1, bmp_info_hdr.bitmap_size, f );
+    fread( img, 1, bmp_info_hdr->bitmap_size, f );
 
     fclose( f );
 

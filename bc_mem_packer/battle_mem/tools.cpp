@@ -135,10 +135,18 @@ void process_images(const char * dir, FILE * mem_file, FILE * def_file, unsigned
 	do {
 		if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 			sprintf(file_path, (type == IMG_16x16) ? "%s\\16x16\\%s" : "IMG_8x8_%s", dir, find_data.cFileName);
-					 
-			if (!(img = load_bitmap(file_path))) {
+			
+			bitmap_file_header_t    bmp_file_hdr;
+			bitmap_info_header_t    bmp_info_hdr;
+			if (!(img = load_bitmap(file_path, &bmp_file_hdr, &bmp_info_hdr))) {
 				printf("Failed to create bitmap: %s\n", file_path);
 				continue;
+			}
+			if (bmp_info_hdr.bits_count != 24) {
+				printf("Failed to create bitmap: %s\n", file_path);
+				printf("Bitmap need to be 24-bit RGB format!\n");
+				continue;
+
 			}
 
 			sprintf(def_name, (type == IMG_16x16) ? "IMG_16x18_%s" : "IMG_8x8_%s", find_data.cFileName);
@@ -148,6 +156,24 @@ void process_images(const char * dir, FILE * mem_file, FILE * def_file, unsigned
 
 			fprintf(def_file, "#define %s\t\t\t0x%.4X\n", def_name, *base_addr);
 
+			if (strcmp(find_data.cFileName, "nebo_svetlo.bmp") == 0) {
+			//if (strcmp(find_data.cFileName, "mario.bmp") == 0) {
+				printf("--------------\n");
+				printf("file_path = %s\n", file_path);
+				printf("bmp_info_hdr.width = %d\n", bmp_info_hdr.width);
+				printf("bmp_info_hdr.height = %d\n", bmp_info_hdr.height);
+				printf("bmp_info_hdr.bits_count = %d\n", bmp_info_hdr.bits_count);
+				printf("bmp_info_hdr.planes = %d\n", bmp_info_hdr.planes);
+				printf("bmp_info_hdr.compression = %d\n", bmp_info_hdr.compression);
+				printf("bmp_info_hdr.color_space_type = %d\n", bmp_info_hdr.color_space_type);
+				printf("bmp_info_hdr.red_channel_bitmask = 0x%08x\n", bmp_info_hdr.red_channel_bitmask);
+				printf("bmp_info_hdr.green_channel_bitmask = 0x%08x\n", bmp_info_hdr.green_channel_bitmask);
+				printf("bmp_info_hdr.blue_channel_bitmask = 0x%08x\n", bmp_info_hdr.blue_channel_bitmask);
+				printf("bmp_info_hdr.alpha_channel_bitmask = 0x%08x\n", bmp_info_hdr.alpha_channel_bitmask);
+				
+				printf("--------------\n");
+			}
+			
 			image_to_mem(mem_file, *base_addr, img, type, def_name);
 
 			// Each image row gets split into 4 byte parts in order to fit memory size.

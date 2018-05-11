@@ -20,15 +20,14 @@
 #define IMG_16x16_plavacigla	0x023F //3
 // ***** MAP *****
 
-#define MAP_BASE_ADDRESS				639 // MAP_OFFSET in battle_city.vhd
+#define MAP_BASE_ADDRESS				703 // MAP_OFFSET in battle_city.vhd
 #define MAP_X							0
 #define MAP_X2							640
 #define MAP_Y							4
 #define MAP_W							64
 #define MAP_H							56
 
-#define REGS_BASE_ADDRESS               ( MAP_BASE_ADDRESS + MAP_WIDTH * MAP_HEIGHT )
-//#define REGS_BASE_ADDRESS               (5439)
+#define REGS_BASE_ADDRESS               (4096)
 
 #define BTN_DOWN( b )                   ( !( b & 0x01 ) )
 #define BTN_UP( b )                     ( !( b & 0x10 ) )

@@ -24,10 +24,19 @@ typedef struct {
     long            v_res;
     unsigned long   colors;
     unsigned long   important_colors;
+	unsigned long   red_channel_bitmask;
+	unsigned long   green_channel_bitmask;
+	unsigned long   blue_channel_bitmask;
+	unsigned long   alpha_channel_bitmask;
+	unsigned long   color_space_type;
 } bitmap_info_header_t;
 
 #pragma pack( pop )
 
-unsigned char * load_bitmap( const char * file );
+unsigned char * load_bitmap(
+	const char * file,
+	bitmap_file_header_t*    bmp_file_hdr,
+	bitmap_info_header_t*    bmp_info_hdr
+);
 
 #endif // _BITMAP_H
