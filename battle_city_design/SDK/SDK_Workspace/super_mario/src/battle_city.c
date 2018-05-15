@@ -12,13 +12,13 @@
  */
 
 // ***** 16x16 IMAGES *****
-#define IMG_16x16_cigle			0x00FF //2				// treba izmenjati lepo i uklopiti sta je sta
-#define IMG_16x16_coin			0x013F //5				// bilo bi kul da izmenimo sva imena, pa umesto cigle, da je lepo blato, crv i sve
-#define IMG_16x16_crno			0x017F //0
-#define IMG_16x16_enemi1		0x01BF //4
-#define IMG_16x16_mario			0x01FF //1
-#define IMG_16x16_plavacigla	0x023F //3
-#define IMG_16x16_tobla3		0x027F //6
+#define IMG_16x16_crv_desno			0x00FF //2	- crvcina desno
+#define IMG_16x16_crv_levo			0x013F //5	- crvcina levo
+#define IMG_16x16_nebo				0x017F //0	- nebo
+#define IMG_16x16_oblak				0x01BF //4	- oblak
+#define IMG_16x16_tobla_trava		0x01FF //1	- tobla sa travom
+#define IMG_16x16_kamen				0x023F //3	- kamen
+#define IMG_16x16_tobla				0x027F //6	- tobla ispod trave
 // ***** MAP *****
 
 #define MAP_BASE_ADDRESS				703 // MAP_OFFSET in battle_city.vhd
@@ -89,21 +89,21 @@ typedef struct {
 	unsigned int reg_h;
 } characters;
 
-characters mario = { 10,	                        // x
-		431, 		                     // y
-		DIR_RIGHT,              		// dir
-		IMG_16x16_mario,  			// type
+characters crv = { 10,	                        // x
+		431, 		                     		// y
+		DIR_RIGHT,              				// dir
+		IMG_16x16_crv_desno,  					// type
 
-		b_false,                		// destroyed
+		b_false,                				// destroyed
 
-		TANK1_REG_L,            		// reg_l
-		TANK1_REG_H             		// reg_h
+		TANK1_REG_L,            				// reg_l
+		TANK1_REG_H             				// reg_h
 		};
 
 characters enemie1 = { 331,						// x
-		431,						// y
-		DIR_LEFT,              		// dir
-		IMG_16x16_enemi1,  		// type
+		431,									// y
+		DIR_LEFT,              					// dir
+		IMG_16x16_oblak,  						// type
 
 		b_false,                		// destroyed
 
@@ -114,7 +114,7 @@ characters enemie1 = { 331,						// x
 characters enemie2 = { 450,						// x
 		431,						// y
 		DIR_LEFT,              		// dir
-		IMG_16x16_enemi1,  		// type
+		IMG_16x16_oblak,  		// type
 
 		b_false,                		// destroyed
 
@@ -125,7 +125,7 @@ characters enemie2 = { 450,						// x
 characters enemie3 = { 330,						// x
 		272,						// y
 		DIR_LEFT,              		// dir
-		IMG_16x16_enemi1,  		// type
+		IMG_16x16_oblak,  		// type
 
 		b_false,                		// destroyed
 
@@ -136,7 +136,7 @@ characters enemie3 = { 330,						// x
 characters enemie4 = { 635,						// x
 		431,						// y
 		DIR_LEFT,              		// dir
-		IMG_16x16_enemi1,  		// type
+		IMG_16x16_oblak,  		// type
 
 		b_false,                		// destroyed
 
@@ -165,17 +165,17 @@ static void chhar_spawn(characters * chhar) {
 			(chhar->y << 16) | chhar->x);
 }
 
-static void map_update(characters * mario) {
+static void map_update(characters * crv) {
 	int x, y;
 	long int addr;
 
-	if (mario->x >= 620 && nivo==1) {
+	if (crv->x >= 620 && nivo==1) {
 			nivo=2;
 			if (udario_u_blok <= 0) {
 				map_move+=620;
-				//chhar_spawn(mario);
+				//chhar_spawn(crv);
 			}
-			if (mario->x == 2560) {
+			if (crv->x == 2560) {
 				map_move = 2520;
 			}
 		}
@@ -186,28 +186,28 @@ static void map_update(characters * mario) {
 					+ 4 * (MAP_BASE_ADDRESS + y * MAP_WIDTH + x);
 			switch (map1[y][x + map_move]) {
 			case 0:
-				Xil_Out32(addr, IMG_16x16_crno);
+				Xil_Out32(addr, IMG_16x16_nebo);
 				break;
 			case 1:
-				Xil_Out32(addr, IMG_16x16_mario);
+				Xil_Out32(addr, IMG_16x16_tobla_trava);
 				break;
 			case 2:
-				Xil_Out32(addr, IMG_16x16_cigle);
+				Xil_Out32(addr, IMG_16x16_crv_desno);
 				break;
 			case 3:
-				Xil_Out32(addr, IMG_16x16_plavacigla);
+				Xil_Out32(addr, IMG_16x16_kamen);
 				break;
 			case 4:
-				Xil_Out32(addr, IMG_16x16_enemi1);
+				Xil_Out32(addr, IMG_16x16_oblak);
 				break;
 			case 5:
-				Xil_Out32(addr, IMG_16x16_coin);
+				Xil_Out32(addr, IMG_16x16_crv_levo);
 				break;
 			case 6:
-				Xil_Out32(addr, IMG_16x16_tobla3);
+				Xil_Out32(addr, IMG_16x16_tobla);
 				break;
 			default:
-				Xil_Out32(addr, IMG_16x16_crno);
+				Xil_Out32(addr, IMG_16x16_nebo);
 				break;
 			}
 		}
@@ -226,7 +226,7 @@ static void map_reset(unsigned char * map) {
 
 }
 
-static bool_t mario_move(unsigned char * map, characters * mario,
+static bool_t crv_move(unsigned char * map, characters * crv,
 		direction_t dir, int start_jump) {
 	unsigned int x;
 	unsigned int y;
@@ -239,15 +239,17 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 
 	int obstackle = 0;
 
-	if (mario->x > ((MAP_X + MAP_WIDTH) * 16 - 16)
-			|| mario->y > (MAP_Y + MAP_HEIGHT) * 16 - 16) {
+	if (crv->x > ((MAP_X + MAP_WIDTH) * 16 - 16)
+			|| crv->y > (MAP_Y + MAP_HEIGHT) * 16 - 16) {
 		return b_false;
 	}
 
-	x = mario->x;
-	y = mario->y;
+	x = crv->x;
+	y = crv->y;
 
 	if (dir == DIR_LEFT) {
+			crv->type = IMG_16x16_crv_levo;
+
 			if (x > MAP_X * 16) {
 				obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump, &start_fall, &jump_cnt);
 
@@ -267,7 +269,7 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 											case 5: {
 												score++;
 												map1[roundY + 1][roundX + 1] = 0;
-												//map_update(&mario);
+												//map_update(&crv);
 											}
 												break;
 											default:
@@ -277,6 +279,7 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 				x--;
 	}
 	} else if (dir == DIR_RIGHT) {
+		crv->type = IMG_16x16_crv_desno;
 
 		obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump, &start_fall, &jump_cnt);
 
@@ -296,7 +299,7 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 							case 5: {
 								score++;
 								map1[roundY + 1][roundX + 1] = 0;
-								//map_update(&mario);
+								//map_update(&crv);
 							}
 								break;
 							default:
@@ -319,7 +322,7 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 	if (start_jump == 1 && jump_cnt < MAX_JUMP) {
 			if (y > MAP_Y * 16) {
 				y--;
-				//mario->y = y;
+				//crv->y = y;
 				jump_cnt++;
 				for (j = 0; j < 45000; j++) {
 									}
@@ -330,7 +333,7 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 	if (start_fall == 1) {
 				/*if (y < MAP_Y * 16) {*/
 					y++;
-					//mario->y = y;
+					//crv->y = y;
 					jump_cnt--;
 					for (j = 0; j < 45000; j++) {
 										}
@@ -351,12 +354,12 @@ static bool_t mario_move(unsigned char * map, characters * mario,
 
 
 
-	mario->x = x;
-	mario->y = y;
+	crv->x = x;
+	crv->y = y;
 
 	Xil_Out32(
-			XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + mario->reg_h ),
-			(mario->y << 16) | mario->x);
+			XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + crv->reg_h ),
+			(crv->y << 16) | crv->x);
 
 	return b_false;
 }
@@ -368,13 +371,13 @@ void battle_city() {
 	/*int block;*/
 
 	map_reset(map1);
-	map_update(&mario);
+	map_update(&crv);
 
 	//chhar_spawn(&enemie1);
 	//chhar_spawn(&enemie2);
 	//chhar_spawn(&enemie3);
 	//chhar_spawn(&enemie4);
-	chhar_spawn(&mario);
+	chhar_spawn(&crv);
 
 	while (1) {
 
@@ -383,8 +386,15 @@ void battle_city() {
 		direction_t d = DIR_STILL;
 		if (BTN_LEFT(buttons)) {
 			d = DIR_LEFT;
+			crv.type = IMG_16x16_crv_levo;
+			map_reset(map1);
+			chhar_spawn(&crv);
+
 		} else if (BTN_RIGHT(buttons)) {
 			d = DIR_RIGHT;
+			crv.type = IMG_16x16_crv_desno;
+			map_reset(map1);
+			chhar_spawn(&crv);
 		}
 
 
@@ -392,9 +402,9 @@ void battle_city() {
 			start_jump = 1;
 		}
 
-		mario_move(map1, &mario, d, start_jump);
+		crv_move(map1, &crv, d, start_jump);
 
-		map_update(&mario);
+		map_update(&crv);
 
 		for (i = 0; i < 100000; i++) {
 		}
