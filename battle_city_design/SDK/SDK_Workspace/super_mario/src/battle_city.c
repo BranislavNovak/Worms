@@ -18,6 +18,7 @@
 #define IMG_16x16_enemi1		0x01BF //4
 #define IMG_16x16_mario			0x01FF //1
 #define IMG_16x16_plavacigla	0x023F //3
+#define IMG_16x16_tobla3		0x027F //6
 // ***** MAP *****
 
 #define MAP_BASE_ADDRESS				703 // MAP_OFFSET in battle_city.vhd
@@ -201,6 +202,9 @@ static void map_update(characters * mario) {
 				break;
 			case 5:
 				Xil_Out32(addr, IMG_16x16_coin);
+				break;
+			case 6:
+				Xil_Out32(addr, IMG_16x16_tobla3);
 				break;
 			default:
 				Xil_Out32(addr, IMG_16x16_crno);
