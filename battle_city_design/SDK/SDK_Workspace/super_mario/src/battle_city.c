@@ -105,43 +105,43 @@ characters enemie1 = { 331,						// x
 		DIR_LEFT,              					// dir
 		IMG_16x16_oblak,  						// type
 
-		b_false,                		// destroyed
+		b_false,                				// destroyed
 
-		TANK_AI_REG_L,            		// reg_l
-		TANK_AI_REG_H             		// reg_h
+		TANK_AI_REG_L,            				// reg_l
+		TANK_AI_REG_H             				// reg_h
 		};
 
 characters enemie2 = { 450,						// x
-		431,						// y
-		DIR_LEFT,              		// dir
-		IMG_16x16_oblak,  		// type
+		431,									// y
+		DIR_LEFT,              					// dir
+		IMG_16x16_oblak,  						// type
 
-		b_false,                		// destroyed
+		b_false,                				// destroyed
 
-		TANK_AI_REG_L2,            		// reg_l
-		TANK_AI_REG_H2             		// reg_h
+		TANK_AI_REG_L2,            				// reg_l
+		TANK_AI_REG_H2             				// reg_h
 		};
 
 characters enemie3 = { 330,						// x
-		272,						// y
-		DIR_LEFT,              		// dir
-		IMG_16x16_oblak,  		// type
+		272,									// y
+		DIR_LEFT,              					// dir
+		IMG_16x16_oblak,  						// type
 
-		b_false,                		// destroyed
+		b_false,                				// destroyed
 
-		TANK_AI_REG_L3,            		// reg_l
-		TANK_AI_REG_H3             		// reg_h
+		TANK_AI_REG_L3,           		 		// reg_l
+		TANK_AI_REG_H3             				// reg_h
 		};
 
 characters enemie4 = { 635,						// x
-		431,						// y
-		DIR_LEFT,              		// dir
-		IMG_16x16_oblak,  		// type
+		431,									// y
+		DIR_LEFT,              					// dir
+		IMG_16x16_oblak,  						// type
 
-		b_false,                		// destroyed
+		b_false,               			 		// destroyed
 
-		TANK_AI_REG_L4,            		// reg_l
-		TANK_AI_REG_H4             		// reg_h
+		TANK_AI_REG_L4,         		   		// reg_l
+		TANK_AI_REG_H4          		   		// reg_h
 		};
 
 unsigned int rand_lfsr113(void) {
@@ -156,29 +156,39 @@ unsigned int rand_lfsr113(void) {
 	return (z1 ^ z2);
 }
 
-static void chhar_spawn(characters * chhar) {
-	Xil_Out32(
-			XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_l ),
-			(unsigned int )0x8F000000 | (unsigned int )chhar->type);
-	Xil_Out32(
-			XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_h ),
-			(chhar->y << 16) | chhar->x);
+static void chhar_spawn(characters * chhar, int first_time_on_map) {
+	if (first_time_on_map == 0) {
+		Xil_Out32(
+				XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_l),
+				(unsigned int )0x8F000000 | (unsigned int )chhar->type);
+		Xil_Out32(
+				XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_h),
+				(chhar->y << 16) | chhar->x);
+	} else {
+		// hardcode for position of worm at the first run
+		Xil_Out32(
+				XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_l),
+				(unsigned int )0x8F000000 | (unsigned int )chhar->type);
+		Xil_Out32(
+				XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_h),
+				(chhar->y = 302) | (chhar->x = 8));
+	}
 }
 
 static void map_update(characters * crv) {
 	int x, y;
 	long int addr;
 
-	if (crv->x >= 620 && nivo==1) {
-			nivo=2;
-			if (udario_u_blok <= 0) {
-				map_move+=620;
-				//chhar_spawn(crv);
-			}
-			if (crv->x == 2560) {
-				map_move = 2520;
-			}
+	if (crv->x >= 620 && nivo == 1) {
+		nivo = 2;
+		if (udario_u_blok <= 0) {
+			map_move += 620;
+			//chhar_spawn(crv);
 		}
+		if (crv->x == 2560) {
+			map_move = 2520;
+		}
+	}
 
 	for (y = 0; y < MAP_HEIGHT; y++) {
 		for (x = 0; x < MAP_WIDTH; x++) {
@@ -226,8 +236,8 @@ static void map_reset(unsigned char * map) {
 
 }
 
-static bool_t crv_move(unsigned char * map, characters * crv,
-		direction_t dir, int start_jump) {
+static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
+		int start_jump) {
 	unsigned int x;
 	unsigned int y;
 	int i, j;
@@ -247,112 +257,132 @@ static bool_t crv_move(unsigned char * map, characters * crv,
 	x = crv->x;
 	y = crv->y;
 
+	/*
+	 * //2	- crvcina desno
+	 #define IMG_16x16_crv_levo				0x013F //5	- crvcina levo
+	 #define IMG_16x16_nebo					0x017F //0	- nebo
+	 #define IMG_16x16_oblak				0x01BF //4	- oblak
+	 #define IMG_16x16_tobla_trava			0x01FF //1	- tobla sa travom
+	 #define IMG_16x16_kamen				0x023F //3	- kamen
+	 #define IMG_16x16_tobla				0x027F //6	- tobla ispod trave
+	 *
+	 *
+	 */
+
 	if (dir == DIR_LEFT) {
-			crv->type = IMG_16x16_crv_levo;
+		crv->type = IMG_16x16_crv_levo;
 
-			if (x > MAP_X * 16) {
-				obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump, &start_fall, &jump_cnt);
+		if (x > MAP_X * 16) {
+			obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump,
+					&start_fall, &jump_cnt);
 
-										switch (obstackle) {
-											case 0:{
-												udario_u_blok = 0;
-											}
-											break;
-											case 2: {
-												udario_u_blok = 1;
-											}
-												break;
-											case 3: {
-												udario_u_blok = 1;
-											}
-												break;
-											case 5: {
-												score++;
-												map1[roundY + 1][roundX + 1] = 0;
-												//map_update(&crv);
-											}
-												break;
-											default:
-												udario_u_blok = 0;
-											}
-						if(udario_u_blok!=1)
+			switch (obstackle) {
+			case 0: {
+				udario_u_blok = 0;
+			}
+				break;
+			case 1: {
+				udario_u_blok = 1;
+				break;
+			}
+			case 2: {
+				udario_u_blok = 1;
+			}
+				break;
+			case 3: {
+				udario_u_blok = 1;
+			}
+				break;
+			case 5: {
+				udario_u_blok = 0;
+				break;
+			}
+
+			default:
+				udario_u_blok = 0;
+				break;
+			}
+			if (udario_u_blok != 1)
 				x--;
-	}
+		}
 	} else if (dir == DIR_RIGHT) {
 		crv->type = IMG_16x16_crv_desno;
 
-		obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump, &start_fall, &jump_cnt);
+		obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,
+				&start_fall, &jump_cnt);
 
-						switch (obstackle) {
-							case 0:{
-								udario_u_blok = 0;
-							}
-							break;
-							case 2: {
-								udario_u_blok = 1;
-							}
-								break;
-							case 3: {
-								udario_u_blok = 1;
-							}
-								break;
-							case 5: {
-								score++;
-								map1[roundY + 1][roundX + 1] = 0;
-								//map_update(&crv);
-							}
-								break;
-							default:
-								udario_u_blok = 0;
-							}
-		if(udario_u_blok!=1)
-		x++;
+		switch (obstackle) {
+		case 0: {
+			udario_u_blok = 0;
+		}
+			break;
+		case 1: {
+			udario_u_blok = 1;
+			break;
+		}
+		case 2: {
+			udario_u_blok = 1;
+		}
+			break;
+		case 3: {
+			udario_u_blok = 1;
+		}
+			break;
+		case 5: {
+			udario_u_blok = 0;
+			break;
+		}
+		default:
+			udario_u_blok = 0;
+			break;
+		}
+
+		if (udario_u_blok != 1)
+			x++;
 	}
 
-	if(jump_cnt == MAX_JUMP){
-				start_jump=0;
-				start_fall=1;
+	if (jump_cnt == MAX_JUMP) {
+		start_jump = 0;
+		start_fall = 1;
 
-			}
+	}
 
-	if(jump_cnt == 0){
-			start_fall=0;
-		}
+	if (jump_cnt == 0) {
+		start_fall = 0;
+	}
 
 	if (start_jump == 1 && jump_cnt < MAX_JUMP) {
-			if (y > MAP_Y * 16) {
-				y--;
-				//crv->y = y;
-				jump_cnt++;
-				for (j = 0; j < 45000; j++) {
-									}
-
+		if (y > MAP_Y * 16) {
+			y--;
+			//crv->y = y;
+			jump_cnt++;
+			for (j = 0; j < 45000; j++) {
 			}
+
 		}
+	}
 
 	if (start_fall == 1) {
-				/*if (y < MAP_Y * 16) {*/
-					y++;
-					//crv->y = y;
-					jump_cnt--;
-					for (j = 0; j < 45000; j++) {
-										}
-				/*}*/
+		/*if (y < MAP_Y * 16) {*/
+		y++;
+		//crv->y = y;
+		jump_cnt--;
+		for (j = 0; j < 45000; j++) {
+		}
+		/*}*/
 	}
 
 	Xx = x;
 	Yy = y;
 
 	/*if (dir == DIR_LEFT) {
-		obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump, &start_fall, &jump_cnt);
-	} else if (dir == DIR_RIGHT) {
-		obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump, &start_fall, &jump_cnt);
-	}*/
+	 obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump, &start_fall, &jump_cnt);
+	 } else if (dir == DIR_RIGHT) {
+	 obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump, &start_fall, &jump_cnt);
+	 }*/
 
 	roundX = floor(Xx / 16);
 	roundY = floor(Yy / 16);
-
-
 
 	crv->x = x;
 	crv->y = y;
@@ -369,6 +399,7 @@ void battle_city() {
 	unsigned int buttons; /*, tmpBtn = 0, tmpUp = 0;*/
 	int i;/*, change = 0, jumpFlag = 0;*/
 	/*int block;*/
+	int ftom = 1;
 
 	map_reset(map1);
 	map_update(&crv);
@@ -377,7 +408,8 @@ void battle_city() {
 	//chhar_spawn(&enemie2);
 	//chhar_spawn(&enemie3);
 	//chhar_spawn(&enemie4);
-	chhar_spawn(&crv);
+	chhar_spawn(&crv, ftom);
+	ftom = 0;
 
 	while (1) {
 
@@ -388,15 +420,14 @@ void battle_city() {
 			d = DIR_LEFT;
 			crv.type = IMG_16x16_crv_levo;
 			map_reset(map1);
-			chhar_spawn(&crv);
+			chhar_spawn(&crv, ftom);
 
 		} else if (BTN_RIGHT(buttons)) {
 			d = DIR_RIGHT;
 			crv.type = IMG_16x16_crv_desno;
 			map_reset(map1);
-			chhar_spawn(&crv);
+			chhar_spawn(&crv, ftom);
 		}
-
 
 		if (BTN_UP (buttons) && jump_cnt == 0) {
 			start_jump = 1;
