@@ -55,7 +55,7 @@
 #define BASE_REG_L						0
 #define BASE_REG_H	                    1
 
-#define MAX_JUMP	                    70
+#define MAX_JUMP	                    30
 
 int lives = 0;
 int score = 0;
@@ -68,6 +68,9 @@ int nivo = 1;
 int start_jump = 0;
 int start_fall = 0;
 int jump_cnt = 0;
+int ftom = 1;
+int gravity = 1;
+int falling = 1;
 
 typedef enum {
 	b_false, b_true
@@ -171,7 +174,7 @@ static void chhar_spawn(characters * chhar, int first_time_on_map) {
 				(unsigned int )0x8F000000 | (unsigned int )chhar->type);
 		Xil_Out32(
 				XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + chhar->reg_h),
-				(chhar->y = 302) | (chhar->x = 8));
+				(chhar->y = 0) | (chhar->x = 5));
 	}
 }
 
@@ -269,12 +272,52 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 	 *
 	 */
 
+	if (gravity == 1) {
+		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
+		obstackle = obstackles_detection(x, y, mapPart, map, 4);
+		switch (obstackle) {
+		case 0:
+			udario_u_blok = 0;
+			break;
+
+		case 1:
+			udario_u_blok = 1;
+			break;
+
+		case 2:
+			udario_u_blok = 1;
+			break;
+
+		case 3:
+			udario_u_blok = 1;
+			break;
+
+		case 5:
+			udario_u_blok = 0;
+			break;
+
+		case 6:
+			udario_u_blok = 1;
+			break;
+		default:
+			udario_u_blok = 0;
+			break;
+		}
+
+		if (udario_u_blok != 1) {
+			y++;
+			falling = 1;
+		} else {
+			falling = 0;
+		}
+	}
+
 	if (dir == DIR_LEFT) {
 		crv->type = IMG_16x16_crv_levo;
 
 		if (x > MAP_X * 16) {
-			obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump,
-					&start_fall, &jump_cnt);
+			//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
+			obstackle = obstackles_detection(x, y, mapPart, map, 2); // left -> 2
 
 			switch (obstackle) {
 			case 0: {
@@ -297,19 +340,26 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 				udario_u_blok = 0;
 				break;
 			}
+			case 6:
+				udario_u_blok = 1;
+				break;
 
 			default:
 				udario_u_blok = 0;
 				break;
 			}
-			if (udario_u_blok != 1)
+
+			if (udario_u_blok != 1) {
 				x--;
+			} else {
+				x++;
+			}
 		}
 	} else if (dir == DIR_RIGHT) {
 		crv->type = IMG_16x16_crv_desno;
 
-		obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,
-				&start_fall, &jump_cnt);
+		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
+		obstackle = obstackles_detection(x, y, mapPart, map, 1);   // right -> 1
 
 		switch (obstackle) {
 		case 0: {
@@ -332,44 +382,79 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 			udario_u_blok = 0;
 			break;
 		}
+		case 6:
+			udario_u_blok = 1;
+			break;
 		default:
 			udario_u_blok = 0;
 			break;
 		}
 
-		if (udario_u_blok != 1)
+		if (udario_u_blok != 1) {
 			x++;
-	}
+		}
 
-	if (jump_cnt == MAX_JUMP) {
-		start_jump = 0;
-		start_fall = 1;
+	} else if (dir == DIR_UP) {
+		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
+		//jump_enable = 1;
+		//start_jump = 1;
+		//obstackle = obstackles_detection(x, y, mapPart, map, 3); // up -> 3
 
-	}
-
-	if (jump_cnt == 0) {
-		start_fall = 0;
-	}
-
-	if (start_jump == 1 && jump_cnt < MAX_JUMP) {
-		if (y > MAP_Y * 16) {
-			y--;
-			//crv->y = y;
-			jump_cnt++;
-			for (j = 0; j < 45000; j++) {
+		if (start_jump == 1 && jump_cnt < MAX_JUMP) {
+			if (y > 40)
+				y -= 40;
+			int k;
+			for (k = 0; k < 100000; k++) {
 			}
+			//jump_cnt++;
+
+			/*if(jump_cnt == MAX_JUMP){
+			 jump_cnt = 0;
+			 start_jump = 0;
+			 gravity = 1;
+			 }*/
+			gravity = 1;
+			start_jump = 0;
+			jump_cnt = 0;
 
 		}
-	}
 
-	if (start_fall == 1) {
-		/*if (y < MAP_Y * 16) {*/
-		y++;
-		//crv->y = y;
-		jump_cnt--;
-		for (j = 0; j < 45000; j++) {
+	} else if (dir == DIR_DOWN) {
+		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
+		obstackle = obstackles_detection(x, y, mapPart, map, 1);
+
+		switch (obstackle) {
+		case 0: {
+			udario_u_blok = 0;
 		}
-		/*}*/
+			break;
+		case 1: {
+			udario_u_blok = 1;
+			break;
+		}
+		case 2: {
+			udario_u_blok = 1;
+		}
+			break;
+		case 3: {
+			udario_u_blok = 1;
+		}
+			break;
+		case 5: {
+			udario_u_blok = 0;
+			break;
+		}
+		case 6:
+			udario_u_blok = 1;
+			break;
+		default:
+			udario_u_blok = 0;
+			break;
+		}
+
+		if (udario_u_blok != 1) {
+			y++;
+		}
 	}
 
 	Xx = x;
@@ -388,7 +473,7 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 	crv->y = y;
 
 	Xil_Out32(
-			XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + crv->reg_h ),
+			XPAR_BATTLE_CITY_PERIPH_0_BASEADDR + 4 * ( REGS_BASE_ADDRESS + crv->reg_h),
 			(crv->y << 16) | crv->x);
 
 	return b_false;
@@ -399,7 +484,6 @@ void battle_city() {
 	unsigned int buttons; /*, tmpBtn = 0, tmpUp = 0;*/
 	int i;/*, change = 0, jumpFlag = 0;*/
 	/*int block;*/
-	int ftom = 1;
 
 	map_reset(map1);
 	map_update(&crv);
@@ -427,10 +511,16 @@ void battle_city() {
 			crv.type = IMG_16x16_crv_desno;
 			map_reset(map1);
 			chhar_spawn(&crv, ftom);
-		}
 
-		if (BTN_UP (buttons) && jump_cnt == 0) {
-			start_jump = 1;
+		} else if (BTN_UP (buttons) && jump_cnt == 0) {
+			d = DIR_UP;
+			if (falling == 1) {
+				start_jump = 0;
+				gravity = 1;
+			} else {
+				start_jump = 1;
+				gravity = 0;
+			}
 		}
 
 		crv_move(map1, &crv, d, start_jump);
