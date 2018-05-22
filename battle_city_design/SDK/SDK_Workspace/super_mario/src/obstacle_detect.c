@@ -9,8 +9,7 @@
 #include "map.h"
 
 //int obstackles_detection(int x, int y, int deoMape, unsigned char * map,int dir, int* start_jump, int* start_fall, int* jump_cnt)
-int obstackles_detection(int x, int y, int deoMape, unsigned char * map,
-		int dir) {
+int obstackles_detection(int x, int y, int deoMape, unsigned char * map, int dir, int previous_dir) {
 	unsigned char crv_position_right;
 	unsigned char crv_position_left;
 	unsigned char crv_position_up;
@@ -24,15 +23,10 @@ int obstackles_detection(int x, int y, int deoMape, unsigned char * map,
 
 	roundX = floor(Xx / 16);
 	roundY = floor(Yy / 16);
-	/*
-	 crv_position_right = map1[roundY + 1][roundX + 1];
-	 crv_position_left = map1[roundY + 1][roundX];
-	 crv_position_up = map1[roundY + 1][roundX];
-	 crv_position_down = map1[roundY + 1][roundX];
-	 */
+
 	crv_position_right = map1[roundY][roundX + 1];
 	crv_position_left = map1[roundY][roundX];
-	crv_position_up = map1[roundY - 1][roundX];
+	crv_position_up = map1[roundY][roundX];
 	crv_position_down = map1[roundY + 1][roundX];
 
 	if (dir == 1) {

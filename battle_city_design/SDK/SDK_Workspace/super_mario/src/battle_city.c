@@ -55,7 +55,7 @@
 #define BASE_REG_L						0
 #define BASE_REG_H	                    1
 
-#define MAX_JUMP	                    30
+#define MAX_JUMP	                    50
 
 int lives = 0;
 int score = 0;
@@ -71,6 +71,7 @@ int jump_cnt = 0;
 int ftom = 1;
 int gravity = 1;
 int falling = 1;
+int previous_dir;
 
 typedef enum {
 	b_false, b_true
@@ -260,21 +261,8 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 	x = crv->x;
 	y = crv->y;
 
-	/*
-	 * //2	- crvcina desno
-	 #define IMG_16x16_crv_levo				0x013F //5	- crvcina levo
-	 #define IMG_16x16_nebo					0x017F //0	- nebo
-	 #define IMG_16x16_oblak				0x01BF //4	- oblak
-	 #define IMG_16x16_tobla_trava			0x01FF //1	- tobla sa travom
-	 #define IMG_16x16_kamen				0x023F //3	- kamen
-	 #define IMG_16x16_tobla				0x027F //6	- tobla ispod trave
-	 *
-	 *
-	 */
-
 	if (gravity == 1) {
-		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
-		obstackle = obstackles_detection(x, y, mapPart, map, 4);
+		obstackle = obstackles_detection(x, y, mapPart, map, 4, previous_dir);
 		switch (obstackle) {
 		case 0:
 			udario_u_blok = 0;
@@ -307,8 +295,61 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 		if (udario_u_blok != 1) {
 			y++;
 			falling = 1;
+			jump_cnt -= 1;
 		} else {
 			falling = 0;
+			jump_cnt = 0;
+		}
+	} else if (gravity == 0) {		// if is not falling, than he is jumping
+		if (start_jump == 1 && jump_cnt < MAX_JUMP) {
+			jump_cnt += 1;
+			y--;
+			int n;
+			for (n = 0; n < 1000; n++)
+				falling = 0;
+
+			obstackle = obstackles_detection(x, y, mapPart, map, 3,
+					previous_dir);
+			switch (obstackle) {
+			case 0:
+				udario_u_blok = 0;
+				break;
+
+			case 1:
+				udario_u_blok = 1;
+				break;
+
+			case 2:
+				udario_u_blok = 1;
+				break;
+
+			case 3:
+				udario_u_blok = 1;
+				break;
+
+			case 5:
+				udario_u_blok = 0;
+				break;
+
+			case 6:
+				udario_u_blok = 1;
+				break;
+			default:
+				udario_u_blok = 0;
+				break;
+			}
+
+			if (udario_u_blok == 1) {
+				falling = 1;
+				gravity = 1;
+				start_jump = 0;
+				//jump_cnt = 0;
+			}
+		} else {
+			gravity = 1;
+			falling = 1;
+			start_jump = 0;
+			//jump_cnt = 0;
 		}
 	}
 
@@ -316,8 +357,8 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 		crv->type = IMG_16x16_crv_levo;
 
 		if (x > MAP_X * 16) {
-			//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
-			obstackle = obstackles_detection(x, y, mapPart, map, 2); // left -> 2
+			obstackle = obstackles_detection(x, y, mapPart, map, 2,
+					previous_dir); // left -> 2
 
 			switch (obstackle) {
 			case 0: {
@@ -358,8 +399,7 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 	} else if (dir == DIR_RIGHT) {
 		crv->type = IMG_16x16_crv_desno;
 
-		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
-		obstackle = obstackles_detection(x, y, mapPart, map, 1);   // right -> 1
+		obstackle = obstackles_detection(x, y, mapPart, map, 1, previous_dir); // right -> 1
 
 		switch (obstackle) {
 		case 0: {
@@ -395,76 +435,11 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 		}
 
 	} else if (dir == DIR_UP) {
-		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
-		//jump_enable = 1;
-		//start_jump = 1;
-		//obstackle = obstackles_detection(x, y, mapPart, map, 3); // up -> 3
-
-		if (start_jump == 1 && jump_cnt < MAX_JUMP) {
-			if (y > 40)
-				y -= 40;
-			int k;
-			for (k = 0; k < 100000; k++) {
-			}
-			//jump_cnt++;
-
-			/*if(jump_cnt == MAX_JUMP){
-			 jump_cnt = 0;
-			 start_jump = 0;
-			 gravity = 1;
-			 }*/
-			gravity = 1;
-			start_jump = 0;
-			jump_cnt = 0;
 
 		}
-
-	} else if (dir == DIR_DOWN) {
-		//obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump,&start_fall, &jump_cnt);
-		obstackle = obstackles_detection(x, y, mapPart, map, 1);
-
-		switch (obstackle) {
-		case 0: {
-			udario_u_blok = 0;
-		}
-			break;
-		case 1: {
-			udario_u_blok = 1;
-			break;
-		}
-		case 2: {
-			udario_u_blok = 1;
-		}
-			break;
-		case 3: {
-			udario_u_blok = 1;
-		}
-			break;
-		case 5: {
-			udario_u_blok = 0;
-			break;
-		}
-		case 6:
-			udario_u_blok = 1;
-			break;
-		default:
-			udario_u_blok = 0;
-			break;
-		}
-
-		if (udario_u_blok != 1) {
-			y++;
-		}
-	}
 
 	Xx = x;
 	Yy = y;
-
-	/*if (dir == DIR_LEFT) {
-	 obstackle = obstackles_detection(x, y, mapPart, map, 2, &start_jump, &start_fall, &jump_cnt);
-	 } else if (dir == DIR_RIGHT) {
-	 obstackle = obstackles_detection(x, y, mapPart, map, 1, &start_jump, &start_fall, &jump_cnt);
-	 }*/
 
 	roundX = floor(Xx / 16);
 	roundY = floor(Yy / 16);
@@ -481,48 +456,51 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 
 void battle_city() {
 
-	unsigned int buttons; /*, tmpBtn = 0, tmpUp = 0;*/
-	int i;/*, change = 0, jumpFlag = 0;*/
-	/*int block;*/
+	unsigned int buttons;
+	int i;
 
 	map_reset(map1);
 	map_update(&crv);
 
-	//chhar_spawn(&enemie1);
-	//chhar_spawn(&enemie2);
-	//chhar_spawn(&enemie3);
-	//chhar_spawn(&enemie4);
+//chhar_spawn(&enemie1);
+//chhar_spawn(&enemie2);
+//chhar_spawn(&enemie3);
+//chhar_spawn(&enemie4);
 	chhar_spawn(&crv, ftom);
 	ftom = 0;
+	previous_dir = BTN_RIGHT(buttons);
+	direction_t previous_button = DIR_STILL;
 
 	while (1) {
 
 		buttons = XIo_In32( XPAR_IO_PERIPH_BASEADDR );
 
 		direction_t d = DIR_STILL;
+
 		if (BTN_LEFT(buttons)) {
+			previous_dir = BTN_LEFT(buttons);
 			d = DIR_LEFT;
+			previous_button = d;
 			crv.type = IMG_16x16_crv_levo;
 			map_reset(map1);
 			chhar_spawn(&crv, ftom);
 
 		} else if (BTN_RIGHT(buttons)) {
+			previous_dir = BTN_RIGHT(buttons);
 			d = DIR_RIGHT;
+			previous_button = d;
 			crv.type = IMG_16x16_crv_desno;
 			map_reset(map1);
 			chhar_spawn(&crv, ftom);
 
 		} else if (BTN_UP (buttons) && jump_cnt == 0) {
+			previous_dir = BTN_UP(buttons);
 			d = DIR_UP;
-			if (falling == 1) {
-				start_jump = 0;
-				gravity = 1;
-			} else {
-				start_jump = 1;
-				gravity = 0;
-			}
+			start_jump = 1;
+			gravity = 0;
 		}
 
+		previous_button = d;
 		crv_move(map1, &crv, d, start_jump);
 
 		map_update(&crv);
