@@ -33,11 +33,14 @@
 
 #include <stdio.h>
 #include "platform.h"
+#include "xparameters.h"
 #include "battle_city.h"
 
 int main()
 {
     init_platform();
+
+    xil_printf("test ispis\n\r");
 
     battle_city();
 

@@ -71,6 +71,7 @@ int jump_cnt = 0;
 int ftom = 1;
 int gravity = 1;
 int falling = 1;
+int shooting = 0;
 int previous_dir;
 
 typedef enum {
@@ -435,8 +436,25 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 		}
 
 	} else if (dir == DIR_UP) {
+	} else if (dir == DIR_DOWN){
 
+		int y_help = (int)((crv->y)/16);
+		int x_help = (int)((crv->x)/16);
+
+		x_help++;
+
+		while(map1[y_help][x_help] == 0 || map1[y_help][x_help] == 4){
+			x_help += 1;
+			xil_printf("While: %d", x_help);
 		}
+
+		xil_printf("Out of while: %d", x_help);
+		map1[y_help][x_help] = 0;
+
+		map_reset(map1);
+		//direction_t d = DIR_STILL;
+		//crv_move(map1, &crv, d, start_jump);
+	}
 
 	Xx = x;
 	Yy = y;
@@ -465,7 +483,7 @@ void battle_city() {
 //chhar_spawn(&enemie1);
 //chhar_spawn(&enemie2);
 //chhar_spawn(&enemie3);
-//chhar_spawn(&enemie4);
+	//chhar_spawn(&enemie1);
 	chhar_spawn(&crv, ftom);
 	ftom = 0;
 	previous_dir = BTN_RIGHT(buttons);
@@ -496,8 +514,14 @@ void battle_city() {
 		} else if (BTN_UP (buttons) && jump_cnt == 0) {
 			previous_dir = BTN_UP(buttons);
 			d = DIR_UP;
+			previous_button = d;
 			start_jump = 1;
 			gravity = 0;
+		}else if (BTN_DOWN(buttons)){
+			previous_dir = BTN_DOWN(buttons);
+			previous_button = d;
+			d = DIR_DOWN;
+			shooting = 1;
 		}
 
 		previous_button = d;
