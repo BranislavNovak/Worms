@@ -73,6 +73,7 @@ int gravity = 1;
 int falling = 1;
 int shooting = 0;
 int previous_dir;
+int level = 1;
 
 typedef enum {
 	b_false, b_true
@@ -438,20 +439,50 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 	} else if (dir == DIR_UP) {
 	} else if (dir == DIR_DOWN){
 
-		int y_help = (int)((crv->y)/16);
-		int x_help = (int)((crv->x)/16);
+		if (shooting == 0) {
+			shooting = 1;
+			int y_help = (int) ((crv->y) / 16);
+			int x_help = (int) ((crv->x) / 16);
 
-		x_help++;
+			x_help++;
 
-		while(map1[y_help][x_help] == 0 || map1[y_help][x_help] == 4){
-			x_help += 1;
-			xil_printf("While: %d", x_help);
+			if (crv->type == IMG_16x16_crv_levo) {
+				while (map1[y_help][x_help] == 0 || map1[y_help][x_help] == 4) {
+					x_help -= 1;
+				}
+			} else {
+				while (map1[y_help][x_help] == 0 || map1[y_help][x_help] == 4) {
+					x_help += 1;
+				}
+			}
+
+			if (map1[y_help][x_help] == 5) {
+				if(level == 1){
+					level = 2;
+				}else{
+					level = 3;
+				}
+				xil_printf("Level: %d", level);
+			}
+
+			if (level == 1) {
+				map1[y_help][x_help] = 0;
+				int counter;
+				for(counter = 0; counter < 1500000; counter++){};
+				shooting = 0;
+			} else if(level == 2){
+
+			} else if(level == 3){
+				int xx, yy;
+				for(yy = 0; yy < 30; yy++){
+					for(xx = 0; xx < 160; xx++){
+						map1[yy][xx] = map2[yy][xx];
+					}
+				}
+				map_reset(map1);
+			}
 		}
 
-		xil_printf("Out of while: %d", x_help);
-		map1[y_help][x_help] = 0;
-
-		map_reset(map1);
 		//direction_t d = DIR_STILL;
 		//crv_move(map1, &crv, d, start_jump);
 	}
@@ -477,6 +508,7 @@ void battle_city() {
 	unsigned int buttons;
 	int i;
 
+	//map_reset(map2);
 	map_reset(map1);
 	map_update(&crv);
 
@@ -521,10 +553,13 @@ void battle_city() {
 			previous_dir = BTN_DOWN(buttons);
 			previous_button = d;
 			d = DIR_DOWN;
-			shooting = 1;
+			shooting = 0;
+			map_reset(map1);
+			chhar_spawn(&crv, ftom);
 		}
 
 		previous_button = d;
+		//crv_move(map2, &crv, d, start_jump);
 		crv_move(map1, &crv, d, start_jump);
 
 		map_update(&crv);
