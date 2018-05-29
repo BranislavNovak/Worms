@@ -69,6 +69,7 @@ int start_jump = 0;
 int start_fall = 0;
 int jump_cnt = 0;
 int ftom = 1;
+int ftom_lvl2 = 0;
 int gravity = 1;
 int falling = 1;
 int shooting = 0;
@@ -457,9 +458,17 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 			}
 
 			if (map1[y_help][x_help] == 5) {
+				map1[y_help][x_help] = 0;
 				if(level == 1){
+					xil_printf("Level when level==1: %d", level);
+					int counter;
+					for(counter = 0; counter < 1000; counter++);
 					level = 2;
-				}else{
+					ftom_lvl2 = 1;
+				}else if(level == 2){
+					xil_printf("Level when level==2: %d", level);
+					int counter;
+					for(counter = 0; counter < 1000; counter++);
 					level = 3;
 				}
 				xil_printf("Level: %d", level);
@@ -468,15 +477,33 @@ static bool_t crv_move(unsigned char * map, characters * crv, direction_t dir,
 			if (level == 1) {
 				map1[y_help][x_help] = 0;
 				int counter;
-				for(counter = 0; counter < 1500000; counter++){};
+				for (counter = 0; counter < 1500000; counter++) {
+				};
 				shooting = 0;
-			} else if(level == 2){
 
-			} else if(level == 3){
+			} else if (level == 2) {
+				if(ftom_lvl2 == 1){
 				int xx, yy;
-				for(yy = 0; yy < 30; yy++){
-					for(xx = 0; xx < 160; xx++){
+				for (yy = 0; yy < 30; yy++) {
+					for (xx = 0; xx < 160; xx++) {
 						map1[yy][xx] = map2[yy][xx];
+					}
+				}
+					//ftom_lvl2 = 0;
+				}else{
+					map1[y_help][x_help] = 0;
+					int counter;
+					for (counter = 0; counter < 1500000; counter++) {
+					};
+					shooting = 0;
+				}
+
+
+			} else if (level > 2) {
+				int xx, yy;
+				for (yy = 0; yy < 30; yy++) {
+					for (xx = 0; xx < 160; xx++) {
+						map1[yy][xx] = map3[yy][xx];
 					}
 				}
 				map_reset(map1);
@@ -556,6 +583,11 @@ void battle_city() {
 			shooting = 0;
 			map_reset(map1);
 			chhar_spawn(&crv, ftom);
+		}
+
+		if(ftom_lvl2 == 1){
+			chhar_spawn(&crv, ftom_lvl2);
+			ftom_lvl2 = 0;
 		}
 
 		previous_button = d;
